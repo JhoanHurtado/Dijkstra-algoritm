@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algoritmo de Dijkstra</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <style>
+    #network {
+      width: 70%;
+      height: 90vh;
+      border: 1px solid lightgray;
+      color: green !important;;
+    }
+
+    #output {
+      width: 30%;
+      background: #8080801a;
+      text-align: start;
+      padding-left: 10px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      padding: 11%;
+    }
+
+    body {
+      text-align: center;
+      font-family: monospace;
+      font-size: larger;
+      font-weight: bold;
+    }
+
+    .body {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .action {
+      display: flex;
+      flex-flow: column;
+      width: 41%;
+    }
+
+    .show-information {
+      border: 1px solid green;
+      border-radius: 6px;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+    }
+
+    button {
+      cursor: pointer;
+      width: 90%;
+      margin: 5px auto;
+      color: white;
+      background: rgba(0, 0, 0, 0.705);
+      padding: 10px;
+      border: 1px solid;
+      border-radius: 6px;
+      box-shadow: 10px 13px 11px 6px;
+    }
+
+    input.control {
+      width: 70%;
+      padding: 8px;
+      border: 1px solid rgb(80, 94, 80);
+      border-radius: 5px;
+      margin: 10px
+    }
+
+    label {
+      font-size: larger;
+      font-weight: lighter;
+      color: rgb(0, 0, 0);
+    }
+
+    .edge-control {
+      text-align-last: right;
+      padding: 0 60px 0 0;
+    }
+
+    .information-div {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .button-actions {
+      display: flex;
+      flex-flow: column-reverse;
+      flex-direction: column;
+    }
+
+    .flex {
+      text-align: -webkit-right;
+      display: flex;
+    }
+
+    table.adjacency-matrix {
+      width: 70%;
+      margin-top: 10PX;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+    }
+    table.adjacency-matrix th, table.adjacency-matrix td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+      width: calc(100% / 6); /* Tamaño proporcional de las celdas */
+    }
+    table.adjacency-matrix th {
+      background-color: #4a4a4a;
+      color: #ffffff;
+      font-weight: bold;
+    }
+    table.adjacency-matrix td {
+      background-color: #d3d3d3;
+      color: #333333;
+      font-weight: lighter;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h1>Algoritmo de Dijkstra</h1>
+
+  <div class="body">
+    <div class="action">
+      <div class="controls">
+        <div class="information-div">
+          <label>Main Nodo:</label>
+          <input type="number" id="startNode" class="control" min="1" placeholder="Enter the main node">
+          <input type="text" id="nodeName" class="control" placeholder="node name">
+          <button onclick="addNode()">Agregar Nodo</button>
+        </div>
+      </div>
+
+      <div class="edge-control">
+        <div class="labels-options">
+          <div class="group">
+            <label>De Nodo:</label>
+            <input type="number" class="control" id="edgeFrom" min="1" placeholder="Of the node">
+          </div>
+          <div class="group">
+            <label>A Nodo:</label>
+            <input type="number" class="control" id="edgeTo" min="1" placeholder="to the node">
+          </div>
+          <div class="group">
+            <label>Peso:</label>
+            <input type="number" class="control" id="edgeWeight" min="1" placeholder="Edge weight">
+          </div>
+        </div>
+
+        <div class="button-actions">
+          <div class="flex">
+            <button onclick="addEdge()">Add Arista</button>
+            <button onclick="editEdge()">Edit Arista</button>
+          </div>
+          <div class="flex">
+            <button onclick="deleteNode()">Delete Nodo</button>
+            <button onclick="deleteEdge()">Delete Arista</button>
+          </div>
+          <div class="flex">
+            <label>Nodo Inicial:</label>
+            <input type="number" id="startNode"  class="control" min="1" placeholder="enter start node">
+            <label>Nodo Final:</label>
+            <input type="number" id="endNode"  class="control" min="1" placeholder="enter final node">
+            <button onclick="calculateDijkstra()">Calcular</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="show-information">
+      <!-- Contenedor para el grafo -->
+      <div id="network"></div>
+
+      <!-- Div para mostrar los resultados -->
+      <div id="output"></div>
+    </div>
+
+  </div>
+  <script>
+    const nodes = new vis.DataSet();
+    const edges = new vis.DataSet();
+    const container = document.getElementById('network');
+    const data = { nodes, edges };
+    const options = {};
+    const network = new vis.Network(container, data, options);
+
+    let nodeId = 1;
+
+    // Función para agregar un nodo
+    function addNode() {
+      const nodeName = document.getElementById('nodeName').value.trim();
+      if (nodeName) {
+        nodes.add({ id: nodeId, label: nodeName });
+        nodeId++;
+        document.getElementById('nodeName').value = '';
+      } else {
+        alert("Por favor ingresa un nombre para el nodo.");
+      }
+    }
+
+    // Función para agregar una arista con peso
+    function addEdge() {
+      const from = parseInt(document.getElementById('edgeFrom').value);
+      const to = parseInt(document.getElementById('edgeTo').value);
+      const weight = parseInt(document.getElementById('edgeWeight').value);
+
+      if (from && to && weight && nodes.get(from) && nodes.get(to)) {
+        edges.add({ id: `e${from}-${to}`, from, to, label: String(weight), length: weight * 50 });
+      } else {
+        alert("Asegúrate de ingresar nodos válidos y un peso.");
+      }
+    }
+
+    // Función para editar el peso de una arista existente
+    function editEdge() {
+      const from = parseInt(document.getElementById('edgeFrom').value);
+      const to = parseInt(document.getElementById('edgeTo').value);
+      const weight = parseInt(document.getElementById('edgeWeight').value);
+
+      const edgeId = `e${from}-${to}`;
+      if (edges.get(edgeId)) {
+        edges.update({ id: edgeId, label: String(weight), length: weight * 50 });
+      } else {
+        alert("La arista especificada no existe.");
+      }
+    }
+
+    // Función para eliminar un nodo
+    function deleteNode() {
+      const node = parseInt(document.getElementById('edgeFrom').value);
+      if (nodes.get(node)) {
+        nodes.remove({ id: node });
+      } else {
+        alert("El nodo especificado no existe.");
+      }
+    }
+
+    // Función para eliminar una arista
+    function deleteEdge() {
+      const from = parseInt(document.getElementById('edgeFrom').value);
+      const to = parseInt(document.getElementById('edgeTo').value);
+      const edgeId = `e${from}-${to}`;
+
+      if (edges.get(edgeId)) {
+        edges.remove({ id: edgeId });
+      } else {
+        alert("La arista especificada no existe.");
+      }
+    }
+
+    // Algoritmo de Dijkstra
+    function dijkstra(startNode, endNode) {
+      const distances = {};
+      const previous = {};
+      const visited = new Set();
+      const queue = new Set(nodes.map(node => node.id));
+
+      nodes.forEach((node) => {
+        distances[node.id] = Infinity;
+        previous[node.id] = null;
+      });
+      distances[startNode] = 0;
+
+      while (queue.size > 0) {
+        let closestNode = null;
+        queue.forEach(node => {
+          if (!closestNode || distances[node] < distances[closestNode]) {
+            closestNode = node;
+          }
+        });
+
+        queue.delete(closestNode);
+        visited.add(closestNode);
+
+        if (closestNode === endNode) break;
+
+        edges.forEach((edge) => {
+          const neighbor = edge.from === closestNode ? edge.to : edge.to === closestNode ? edge.from : null;
+          if (neighbor && !visited.has(neighbor)) {
+            const alt = distances[closestNode] + parseInt(edge.label);
+            if (alt < distances[neighbor]) {
+              distances[neighbor] = alt;
+              previous[neighbor] = closestNode;
+            }
+          }
+        });
+      }
+      const path = [];
+      let currentNode = endNode;
+      while (currentNode !== null) {
+        path.push(currentNode);
+        currentNode = previous[currentNode];
+      }
+      path.reverse();
+
+      return { distance: distances[endNode], path };
+    }
+
+    // Función para calcular y mostrar el camino más corto
+    function calculateDijkstra() {
+      const startNode = parseInt(document.getElementById('startNode').value);
+      const endNode = parseInt(document.getElementById('endNode').value);
+
+      if (!startNode || !endNode || !nodes.get(startNode) || !nodes.get(endNode)) {
+        alert("Por favor, ingresa nodos válidos y un nodo final.");
+        return;
+      }
+      
+      const result = dijkstra(startNode, endNode);
+      const output = document.getElementById('output');
+
+      output.innerHTML = `<h3>Distancias desde el nodo ${startNode}</h3>`;
+
+      if (result.distance === Infinity) {
+        output.innerHTML = `<h3>No existe un camino entre el nodo ${startNode} y el nodo ${endNode}.</h3>`;
+      } else {
+        const pathNames = result.path.map(nodeId => nodes.get(nodeId).label);
+        output.innerHTML = `<h3>Camino más corto desde ${nodes.get(startNode).label} hasta ${nodes.get(endNode).label}</h3>`;
+        output.innerHTML += `<p>Distancia total: ${result.distance}</p>`;
+        output.innerHTML += `<p>Camino: ${pathNames.join(' -> ')}</p>`;
+      }
+
+      displayAdjacencyMatrix();
+    }
+
+    // Función para mostrar la matriz de adyacencia
+   function displayAdjacencyMatrix() {
+      const nodeIds = nodes.map(node => node.id);
+      const matrix = Array.from({ length: nodeIds.length }, () => Array(nodeIds.length).fill(Infinity));
+
+      edges.forEach(edge => {
+        const fromIndex = nodeIds.indexOf(edge.from);
+        const toIndex = nodeIds.indexOf(edge.to);
+        const weight = parseInt(edge.label);
+        matrix[fromIndex][toIndex] = weight;
+        matrix[toIndex][fromIndex] = weight;
+      });
+
+      let matrixHTML = "<h3>Matriz de Adyacencia</h3><table class='adjacency-matrix'><tr><th></th>";
+      nodeIds.forEach(id => matrixHTML += `<th>${nodes.get(id).label}</th>`);
+      matrixHTML += "</tr>";
+
+      for (let i = 0; i < matrix.length; i++) {
+        matrixHTML += `<tr><th>${nodes.get(nodeIds[i]).label}</th>`;
+        for (let j = 0; j < matrix[i].length; j++) {
+          matrixHTML += `<td>${matrix[i][j] === Infinity ? '∞' : matrix[i][j]}</td>`;
+        }
+        matrixHTML += "</tr>";
+      }
+
+      matrixHTML += "</table>";
+      document.getElementById("output").innerHTML += matrixHTML;
+    }
+  </script>
+</body>
+
+</html>
