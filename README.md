@@ -1,7 +1,7 @@
 
 # Algoritmo de Dijkstra
 
-Este proyecto implementa un grafo interactivo que permite visualizar y calcular rutas más cortas entre nodos utilizando el *algoritmo de Dijkstra. La aplicación está construida en **HTML* y *JavaScript* y utiliza la biblioteca *Vis.js* para representar el grafo visualmente.
+Este proyecto implementa un grafo interactivo que permite visualizar y calcular rutas más cortas entre nodos utilizando el **algoritmo de Dijkstra**. La aplicación está construida en **HTML** y **JavaScript** y utiliza la biblioteca **Vis.js** para representar el grafo visualmente.
 
 ## Características del Proyecto
 
@@ -36,9 +36,10 @@ Este proyecto implementa un grafo interactivo que permite visualizar y calcular 
 **HTML**
 
 El archivo HTML contiene:
-	•	Un contenedor para el grafo (`<div id="graph-container">`).
-	•	Controles de entrada para añadir nodos y aristas.
-	•	Una tabla que muestra la matriz de adyacencia y un área de resultados para visualizar el camino más corto.
+
+	1. Un contenedor para el grafo (`<div id="network">`).
+	2. Controles de entrada para añadir nodos y aristas.
+	3. Una tabla que muestra la matriz de adyacencia y un área de resultados para visualizar el camino más corto.
 
 **JavaScript**
 
@@ -63,7 +64,7 @@ El archivo JavaScript define varias funciones clave:
 
 
 4.***Algoritmo de Dijkstra***:
-		•	La función **dijkstra()** implementa el algoritmo para calcular el camino más corto. Calcula la ruta más corta en función de la distancia acumulada y genera el costo total y el camino.
+		La función **dijkstra()** implementa el algoritmo para calcular el camino más corto. Calcula la ruta más corta en función de la distancia acumulada y genera el costo total y el camino.
 
     function dijkstra(startNode, endNode) {
       // Algoritmo de Dijkstra para encontrar la ruta más corta
@@ -71,7 +72,7 @@ El archivo JavaScript define varias funciones clave:
 
 
 5.***Generar y Mostrar la Matriz de Adyacencia:***
-		•	La función displayAdjacencyMatrix() construye la matriz y muestra una tabla de adyacencia con los pesos de las aristas.
+		La función displayAdjacencyMatrix() construye la matriz y muestra una tabla de adyacencia con los pesos de las aristas.
 
     function displayAdjacencyMatrix() {
       // Genera y muestra la matriz de adyacencia
